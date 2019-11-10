@@ -51,13 +51,13 @@ class Level():
             pass
         
     def checkStench(self, x, y):
-        if x > 0 and (self.tiles[y][x - 1][0] == 2 or self.tiles[y][x - 1][0] == 5):
+        if x > 0 and self.tiles[y][x - 1][0] == 2:
             return True
-        if x < 9 and (self.tiles[y][x + 1][0] == 2 or self.tiles[y][x + 1][0] == 5):
+        if x < 9 and self.tiles[y][x + 1][0] == 2:
             return True
-        if y > 0 and (self.tiles[y - 1][x][0] == 2 or self.tiles[y - 1][x][0] == 5):
+        if y > 0 and self.tiles[y - 1][x][0] == 2:
             return True
-        if y < 9 and (self.tiles[y + 1][x][0] == 2 or self.tiles[y + 1][x][0] == 5):
+        if y < 9 and self.tiles[y + 1][x][0] == 2:
             return True
         
         return False
@@ -74,6 +74,30 @@ class Level():
         
         return False
             
+    def aiInfo(self):
+        px = 0
+        py = 0
+        wumpuscount = 0
+        pitcount = 0
+        
+        for y in range(10):
+            for x in range(10):
+                if self.tiles[y][x][0] == 1:
+                    px = x
+                    py = y
+                elif self.tiles[y][x][0] == 2:
+                    wumpuscount += 1
+                elif self.tiles[y][x][0] == 3:
+                    pitcount += 1
+        
+        
+        
+        return px , py , wumpuscount , pitcount , self.ammo
             
-            
+    
+    
+    
+    
+    
+    
         

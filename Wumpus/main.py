@@ -4,6 +4,7 @@ import pygame
 import readSettings
 import Button as btn
 import Level as lvl
+import WumpusPlayerAI as AI
 
 def main():
     pygame.init()
@@ -140,6 +141,13 @@ def main():
                 #create tile map and get ammo
                 level = lvl.Level()
                 
+                #create AI if AI is playing
+                if aicontrolled:
+                    ai = AI.WumpusPlayerAI()
+                    px , py , wumpuscount , pitcount , ammo = level.aiInfo()
+                    ai.newLevelInfo(px , py , wumpuscount , pitcount , ammo)
+                    wait = 60
+                
                 #initialize player stance
                 playeraction = 'Walking'
                 playeralive = True
@@ -224,6 +232,51 @@ def main():
                 
                 movement = False
             
+            if aicontrolled and wait == 0:
+                if level.tiles[py][px][0] == 5:
+                    deadwumpus = True
+                else:
+                    deadwumpus = False
+                
+                if level.tiles[py][px][0] != 2 and level.tiles[py][px][0] != 3 and level.tiles[py][px][0] != 4:
+                    direction , playeraction = ai.requestAction(px , py , level.checkStench(px,py) , level.checkBreeze(px,py) , deadwumpus)
+                    if playeraction == 'Walking' :
+                        if direction == 'up':
+                            px -= 1
+                        elif direction == 'down':
+                            px += 1
+                        elif direction == 'left':
+                            py -= 1
+                        elif direction == 'right':
+                            py += 1
+                            
+                        level.tiles[py][px][1] = 1
+                    else:
+                        if direction == 'up':
+                            level.ammo -= 1
+                            if level.tiles[py][px - 1][0] == 2:
+                                level.tiles[py][px - 1][0] = 5
+                        elif direction == 'down':
+                            level.ammo -= 1
+                            if level.tiles[py][px + 1][0] == 2:
+                                level.tiles[py][px + 1][0] = 5
+                        elif direction == 'left':
+                            level.ammo -= 1
+                            if level.tiles[py - 1][px][0] == 2:
+                                level.tiles[py - 1][px][0] = 5
+                        elif direction == 'right':
+                            level.ammo -= 1
+                            if level.tiles[py + 1][px][0] == 2:
+                                level.tiles[py + 1][px][0] = 5
+                            
+                        level.tiles[py][px][1] = 1
+                        
+                    wait = 30
+                    movement = True
+                
+            elif aicontrolled:
+                wait -= 1
+            
             #display buttons
             backButton.draw(display)
             
@@ -263,6 +316,10 @@ def main():
                     if level.tiles[py][px][0] == 4 and winButton.unclick(x , y):
                         if level.checkForNextLevel():
                             level.nextLevel()
+                            if aicontrolled:
+                                px , py , wumpuscount , pitcount , ammo = level.aiInfo()
+                                ai.newLevelInfo(px , py , wumpuscount , pitcount, ammo)
+                                wait = 60
                             if level.checkForNextLevel() == False:
                                 winButton = btn.Button(image='images//win_button.png',x=200,y=250)
                         else:
@@ -336,6 +393,7 @@ def main():
                     mouseclicked = True
             
             
+            
             #$$$$$$$$ Check player state if player moved $$$$$$$$
             if movement:
                 if level.tiles[py][px][0] == 2 or level.tiles[py][px][0] == 3:
@@ -367,6 +425,8 @@ def main():
                 del backButton, tile , darktile , level , winButton
                 if aicontrolled == False:
                     del upButton, downButton, leftButton, rightButton, walkButton, shootButton
+                else:
+                    del ai
                     
             else:
                 #Update image
