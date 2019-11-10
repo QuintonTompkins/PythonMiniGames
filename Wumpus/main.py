@@ -146,6 +146,7 @@ def main():
                     ai = AI.WumpusPlayerAI()
                     px , py , wumpuscount , pitcount , ammo = level.aiInfo()
                     ai.newLevelInfo(px , py , wumpuscount , pitcount , ammo)
+                    #wait is the amount of frames between each AI action 60 = 1 second
                     wait = 60
                 
                 #initialize player stance
@@ -238,7 +239,9 @@ def main():
                 else:
                     deadwumpus = False
                 
+                #if the ai killed itself or is at the goal then don't call the ai logic
                 if level.tiles[py][px][0] != 2 and level.tiles[py][px][0] != 3 and level.tiles[py][px][0] != 4:
+                    #request an action and a direction for that action from the ai
                     direction , playeraction = ai.requestAction(px , py , level.checkStench(px,py) , level.checkBreeze(px,py) , deadwumpus)
                     if playeraction == 'Walking' :
                         if direction == 'up':
@@ -269,8 +272,7 @@ def main():
                             if level.tiles[py + 1][px][0] == 2:
                                 level.tiles[py + 1][px][0] = 5
                             
-                        level.tiles[py][px][1] = 1
-                        
+                    #Wait half a second before ai logic repeats
                     wait = 30
                     movement = True
                 
@@ -316,10 +318,12 @@ def main():
                     if level.tiles[py][px][0] == 4 and winButton.unclick(x , y):
                         if level.checkForNextLevel():
                             level.nextLevel()
+                            #Set the ai up for the next level
                             if aicontrolled:
                                 px , py , wumpuscount , pitcount , ammo = level.aiInfo()
                                 ai.newLevelInfo(px , py , wumpuscount , pitcount, ammo)
                                 wait = 60
+                            #if its the last level change the button image
                             if level.checkForNextLevel() == False:
                                 winButton = btn.Button(image='images//win_button.png',x=200,y=250)
                         else:

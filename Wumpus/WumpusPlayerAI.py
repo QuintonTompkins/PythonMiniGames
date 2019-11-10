@@ -73,9 +73,11 @@ class WumpusPlayerAI():
             for t in newtiles:
                 tilelist.append(t)
         
+        #self.path will be stacked with actions which will be popped later
         self.path = [nexttile]
         currenttile = nexttile
         
+        #stack movements
         count = 0
         while currenttile != None:   
             count += 1
@@ -86,14 +88,18 @@ class WumpusPlayerAI():
                         self.path.append(currenttile)
                     break
                         
+        #go ahead and pop the first one, because we are already there.
         self.path.pop()
         
     
     #Calculate the next best tile to explore
     def calcBestTile(self):
-        tilelist = []
         
+        tilelist = []
         count = 0
+        
+        #We are going to look at all the fringe tiles and figure out which one gives us the best chance of survival.
+        #The ai will prefer risking a wumpus tile over a pit tile. If the wumpus risk is too high then shoot it first.
         for tile in self.fringetiles:
             tilelist.append([[tile[0],tile[1]],[0,1],[0,1]])
             
@@ -101,7 +107,7 @@ class WumpusPlayerAI():
                           [tile[0]+1,tile[1]],
                           [tile[0]  ,tile[1]-1],
                           [tile[0]  ,tile[1]+1]]
-            
+            #check tiles surrounding target fringe tile and check for breezes and stenches to calculate risk
             for tile2 in checktiles:
                 if tile2[0] > -1 and tile2[0] < 10 and tile2[1] > -1 and tile2[1] < 10:
                     for tile3 in self.exploredtiles:
@@ -112,7 +118,10 @@ class WumpusPlayerAI():
                                           [tile2[0]  ,tile2[1]-1],
                                           [tile2[0]  ,tile2[1]+1]]
                             
+                            #chance is a relative risk of a tile.
                             chance = 1
+                            #Check how many tiles surrounding each of these tiles could be causing a stench/breeze 
+                            #and use that info to calculate the chances this specific fringe tile is the cause.
                             for tile4 in checktiles2:
                                 for tile5 in self.exploredtiles:
                                     if tile5[0] == tile4:
@@ -125,21 +134,26 @@ class WumpusPlayerAI():
                             if tile3[1]:
                                 tilelist[count][1][0] += chance
                             else:
+                                #if any tiles next to it don't have a stench then it can't have a wumpus
                                 tilelist[count][1][1] = 0
                             if tile3[2]:
-                                tilelist[count][2][0] += chance
+                                #pit has it's risk doubled because we can at least shoot a wumpus
+                                tilelist[count][2][0] += chance * 2
                             else:
+                                #if any tiles next to it don't have a breeze then it can't have a pit
                                 tilelist[count][2][1] = 0
                             break
 
             count += 1
         
+        #Check for which fringe tile has the lowest risk
         besttile = [[0,0],[1000000,1000000]]
         for tile in tilelist:
-            danger = [tile[1][0] * tile[1][1] , tile[2][0] * tile[2][1] * 2]
+            danger = [tile[1][0] * tile[1][1] , tile[2][0] * tile[2][1]]
             if besttile[1][0] + besttile[1][1] > danger[0] + danger[1]:
                 besttile = [ tile[0] , danger]
                 
+        #If the wumpus risk is too high then shoot the tile first
         if besttile[1][0] > 2 and self.ammo > 0:
             self.action = 'Shooting'
         else:
@@ -158,6 +172,7 @@ class WumpusPlayerAI():
         action = 'Walking'
         ls = len(self.path) - 1
         if ls == 0 and self.action == 'Shooting':
+            #The stench is gone because it was caused by a wumpus that was already shot
             if not stench:
                 self.action = 'Walking'
                 nexttile = self.path[ls]
@@ -166,18 +181,19 @@ class WumpusPlayerAI():
                     if tile[0][0] == nexttile:
                         tile[0][1] = False
                         break
+            #Wumpus is still there so shoot it, and then walk into the tile next
             else:
                 nexttile = self.path[ls]
                 action = 'Shooting'
                 self.action = 'Walking'
         else:
+            #Walk to the next tile
             nexttile = self.path[ls]
             self.path.pop()
         
         direction = (currenttile[0] - nexttile[0]) * 2 + (currenttile[1] - nexttile[1]) 
         
         return self.dirList.get(direction) , action
-    
     
     
     #add new tiles to fringe
