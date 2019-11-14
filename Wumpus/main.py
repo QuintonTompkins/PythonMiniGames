@@ -226,6 +226,10 @@ def main():
                             display.blit(tile , (i * 50 + 50, k * 50 + 50))
                             if level.tiles[k][i][0] > 1:
                                 display.blit(objects[level.tiles[k][i][0] - 2] , (i * 50 + 50, k * 50 + 50))
+                        elif aicontrolled:
+                            display.blit(darktile , (i * 50 + 50, k * 50 + 50))
+                            if level.tiles[k][i][0] > 1:
+                                display.blit(objects[level.tiles[k][i][0] - 2] , (i * 50 + 50, k * 50 + 50))
                         else:
                             display.blit(darktile , (i * 50 + 50, k * 50 + 50))
                     
