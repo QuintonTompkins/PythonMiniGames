@@ -148,6 +148,7 @@ def main():
                     ai.newLevelInfo(px , py , wumpuscount , pitcount , ammo)
                     #wait is the amount of frames between each AI action 60 = 1 second
                     wait = 60
+                    speed = 30
                 
                 #initialize player stance
                 playeraction = 'Walking'
@@ -175,7 +176,8 @@ def main():
                 
                 #Check if player or ai is playing and create appropriate buttons
                 if aicontrolled:
-                    pass
+                    speedUpButton    = btn.Button(image='images//up_button.png',   x=675,y=425)
+                    speedDownButton  = btn.Button(image='images//down_button.png', x=675,y=525)
                 else:
                     walkButton  = btn.Button(image='images//walk_button.png', x=650,y=290)
                     shootButton = btn.Button(image='images//shoot_button.png',x=650,y=350)
@@ -218,6 +220,14 @@ def main():
                 infotext = 'Breeze: ' + str(level.checkBreeze(px,py))
                 text = font.render(infotext, True, (255, 255, 255)) 
                 display.blit(text,(615,240))
+                
+                if aicontrolled:
+                    text = font.render('AI Speed: ', True, (255, 255, 255)) 
+                    display.blit(text,(615,270))
+                    
+                    infotext = str(round(speed/60 , 2)) + ' Seconds/Action'
+                    text = font.render(infotext, True, (255, 255, 255)) 
+                    display.blit(text,(600,300))
                 
                 #display tiles
                 for i in range(0,10):
@@ -277,7 +287,7 @@ def main():
                                 level.tiles[py + 1][px][0] = 5
                             
                     #Wait half a second before ai logic repeats
-                    wait = 30
+                    wait = speed
                     movement = True
                 
             elif aicontrolled:
@@ -289,7 +299,10 @@ def main():
             if level.tiles[py][px][0] == 4:
                 winButton.draw(display)
             
-            if aicontrolled == False:
+            if aicontrolled:
+                speedUpButton.draw(display)
+                speedDownButton.draw(display)
+            else:
                 walkButton.draw(display)
                 shootButton.draw(display)
                 
@@ -341,7 +354,19 @@ def main():
                                    py = k 
                         movement = True
                         
-                    if aicontrolled == False and playeralive:
+                    if aicontrolled:
+                        #Arrow buttons
+                        if speedUpButton.unclick(x , y):
+                            if speed > 5:
+                                speed -= 5
+                                movement = True
+                        
+                        if speedDownButton.unclick(x , y):
+                            if speed < 60:
+                                speed += 5
+                                movement = True
+                            
+                    elif playeralive:
                         #Player control buttons
                         if walkButton.unclick(x , y):
                             playeraction = 'Walking'
