@@ -47,7 +47,8 @@ class WumpusPlayerAI():
     
     #Will calculate a safe path to the destination tile with breadth first search
     def calcPath(self, px , py , nexttile):
-        tilelist = [[None,[px,py]]]
+        #tilelist has [parent coordinates ,coordinates , has been expanded]
+        tilelist = [[None,[px,py],False]]
         
         #found will be set to true when the nexttile is found
         found = False
@@ -55,21 +56,31 @@ class WumpusPlayerAI():
             newtiles = []
             
             for tile in tilelist:
-                checktiles = [[tile[1][0]-1,tile[1][1]],
-                              [tile[1][0]+1,tile[1][1]],
-                              [tile[1][0]  ,tile[1][1]-1],
-                              [tile[1][0]  ,tile[1][1]+1]]
-                
-                for tile2 in checktiles:
-                    if tile2[0] > -1 and tile2[0] < 10 and tile2[1] > -1 and tile2[1] < 10:
-                        for tile3 in self.exploredtiles:
-                            if tile2 == tile3[0]:
-                                newtiles.append([tile[1],tile3[0]])
+                if not tile[2]:
+                    tile[2] = True
+                    checktiles = [[tile[1][0]-1,tile[1][1]],
+                                  [tile[1][0]+1,tile[1][1]],
+                                  [tile[1][0]  ,tile[1][1]-1],
+                                  [tile[1][0]  ,tile[1][1]+1]]
+                    
+                    for tile2 in checktiles:
+                        if tile2[0] > -1 and tile2[0] < 10 and tile2[1] > -1 and tile2[1] < 10:
+                            
+                            alreadyadded = False
+                            for tile4 in tilelist:
+                                if tile4[1] == tile2:
+                                    alreadyadded = True
+                                    break
                                 
-                        if tile2 == nexttile:
-                            newtiles.append([tile[1],tile2])
-                            found = True
-                
+                            if not alreadyadded:
+                                for tile3 in self.exploredtiles:
+                                    if tile2 == tile3[0]:
+                                        newtiles.append([tile[1],tile3[0],False])
+                                        
+                                if tile2 == nexttile:
+                                    newtiles.append([tile[1],tile2,False])
+                                    found = True
+                    
             for t in newtiles:
                 tilelist.append(t)
         
